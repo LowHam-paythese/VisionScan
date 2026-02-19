@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Network IP Scanner V0.2</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+      }
+      .container {
+        max-width: 600px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        text-align: center;
+        color: #333;
+      }
+      label {
+        margin: 10px 0 5px;
+      }
+      select,
+      input[type="text"],
+      button {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      button {
+        background-color: #99cc00; /* Main color */
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #88b200; /* Darker shade for hover */
+      }
+      #error-message {
+        color: red;
+        display: none;
+      }
+      #message {
+        text-align: center;
+        color: #333;
+      }
+      .hidden {
+        display: none;
+      }
+      #searchBar {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Network IP Scanner V0.2</h1>
+
+      <label>Select an option:</label>
+      <select id="select_something" onchange="searchtypechange()">
+        <option value="quick_scan_cam">Quick Scan (ARP Cache)</option>
+        <option value="camera-range">
+          Search for Cameras (Specific Range)
+        </option>
+        <option value="custom-range">Search Custom Range</option>
+        <option value="search_mac">Search for MAC</option>
+        <option value="change_ip">Change IP</option>
+      </select>
+
+      <div id="custom-range-input" class="hidden">
+        <label id="lblrange" for="custom-range">Enter Custom Range:</label>
+        <div>
+          <input
+            type="text"
+            id="Ip1classA"
+            placeholder="IP"
+            maxlength="3"
+            style="width: 50px"
+          />.
+          <input
+            type="text"
+            id="Ip1classB"
+            placeholder="IP"
+            maxlength="3"
+            style="width: 50px"
+          />.
+          <input
+            type="text"
+            id="Ip1classC"
+            placeholder="IP"
+            maxlength="3"
+            style="width: 50px"
+          />.
+          <label for="">0/</label>
+          <input
+            type="text"
+            id="Ip1classD"
+            placeholder="16 or 24"
+            maxlength="3"
+            style="width: 50px"
+            oninput="validateInput()"
+          />
+        </div>
+        <p id="error-message">Please enter 16 or 24 only.</p>
+      </div>
+
+      <div id="change-id" class="hidden">
+        <label for="OG_IP">IP:</label>
+        <input type="text" id="OG_IP" placeholder="IP" maxlength="15" />
+
+        <label for="changed_ip">Change to:</label>
+        <input type="text" id="changed_ip" placeholder="IP" maxlength="15" />
+
+        <label for="username">Username</label>
+        <input type="text" id="username" placeholder="example:admin" />
+
+        <label for="password">Password</label>
+        <input type="text" id="password" placeholder="example:password123" />
+
+        <button id="change_dahua" onclick="changeip_dahua()">Change</button>
+      </div>
+
+      <button id="submit-btn">Search</button>
+
+      <div id="searchBar">
+        <label for="search_details">Search:</label>
+        <input type="text" id="search_details" onkeyup="search_ips()" />
+      </div>
+
+      <p id="search_values"></p>
+      <p id="message">Searching Network...</p>
+    </div>
+    <script>
+      let results = [];
+      let all_json = [];
+
+      let arr_check = [
+        "10.0.0.0/24",
+        "192.168.1.0/24",
+        "192.168.10.0/24",
+        "192.168.100.0/24",
+        "192.168.101.0/24",
+        "192.168.111.0/24",
+        "192.168.123.0/24",
+        "172.0.0.0/24",
+        "192.0.0.0/24",
+        "192.168.0.0/24",
+        "192.168.250.0/24",
+      ];
+
+      try {
+        document
+          .getElementById("change_dahua")
+          .addEventListener("click", function (event) {
+            event.preventDefault();
+            changeip_dahua();
+          });
+        const changeip_dahua = () => {
+          document.getElementById("message").innerHTML += "Changing";
+          let changed_ip = document.getElementById("changed_ip").value;
+          let OG_IP = document.getElementById("OG_IP").value;
+          let password = document.getElementById("password").value;
+          let username = document.getElementById("username").value;
+          let subnet = "255.255.255.0";
+          let json_data = "";
+          fetch(
+            `http://localhost:5000/api/change_cam?checking_cam=${encodeURIComponent(
+              OG_IP
+            )}&changing_cam=${encodeURIComponent(
+              changed_ip
+            )}&subnet=${encodeURIComponent(
+              subnet
+            )}&username=${encodeURIComponent(
+              username
+            )}&password=${encodeURIComponent(password)}`
+          )
+            .then((response) => response.json())
+            .then((data) => {
+              document.getElementById(
+                "message"
+              ).innerHTML = `Camera ${OG_IP} to ${changed_ip}`;
+            })
+            .catch((error) => {
+              document.getElementById("message").innerHTML += " - Error";
+            });
+        };
+        function validateInput() {
+          const inputField = document.getElementById("Ip1classD");
+          const errorMessage = document.getElementById("error-message");
+          const value = inputField.value;
+
+          if (value !== "24" && value !== "16" && value !== "") {
+            errorMessage.style.display = "block";
+          } else {
+            errorMessage.style.display = "none";
+          }
+        }
+        fetch("http://localhost:5000/fetch-data") //Ek weet wat my code doen
+          //json get
+          .then((res) => {
+            return res.json();
+          })
+          .then((res) => {
+            all_json = res;
+            //console.log('Json found ', res)
+
+            console.log("results are bigger than 0");
+            initial_json = all_json
+              .map(
+                (element) =>
+                  `MAC Prefix: ${element.macPrefix}, Vendor Name: ${element.vendorName}, Last Update: ${element.lastUpdate}`
+              )
+              .join("<br>");
+          })
+          .catch((error) => {
+            console.log("Error found ", error);
+          });
+      } catch (error) {
+        document.getElementById("message").innerHTML =
+          "There was a problem found when trying to find the JSON " + error;
+      }
+      const search_ips = () => {
+        try {
+          // if (select_something != 'quick_scan_cam') {
+
+          document.getElementById("message").innerHTML = "";
+          // results = []
+          let select_something =
+            document.getElementById("select_something").value;
+          let custom_range = document.getElementById("search_details").value;
+          let search_values = document.getElementById("search_values").value;
+          //console.log('searching ', custom_range)
+
+          if (select_something === "search_mac") {
+            const results = all_json.filter(
+              (element) =>
+                element.macPrefix
+                  .toLowerCase()
+                  .includes(custom_range.toLowerCase()) ||
+                element.vendorName
+                  .toLowerCase()
+                  .includes(custom_range.toLowerCase())
+            );
+
+            if (results.length > 0) {
+              console.log("results are bigger than 0");
+              const resultsHTML = results
+                .map(
+                  (element) =>
+                    `MAC Prefix: ${element.macPrefix}, Vendor Name: ${element.vendorName}, Last Update: ${element.lastUpdate}`
+                )
+                .join("<br>");
+
+              document.getElementById("message").innerHTML = resultsHTML;
+            } else {
+              document.getElementById("message").innerHTML =
+                "No results found.";
+            }
+          } else {
+            results.forEach((element) => {
+              if (element.toLowerCase().includes(custom_range.toLowerCase())) {
+                // //console.log('The element ' + element + ' The answer ' + custom_range.toLowerCase())
+                document.getElementById("message").innerHTML += element;
+              }
+            });
+          }
+        } catch (error) {
+          document.getElementById("message").innerHTML =
+            "Searching error found  " + error;
+        }
+      };
+      const searchtypechange = () => {
+        //console.log('searchtypechange')
+        // let search_details = document.getElementById('search_details').reset()
+        results = [];
+        let dive_custom_range = document.getElementById("custom-range-input");
+        let lblrange = document.getElementById("lblrange");
+        let select_something = document.getElementById("select_something");
+        let change_id = document.getElementById("change-id");
+        document.getElementById("searchBar").style.display = "none";
+        //console.log(select_something)
+
+        change_id.style.display = "none";
+        if (select_something.value === "custom-range") {
+          dive_custom_range.style.display = "block";
+          lblrange.style.display = "block";
+          document.getElementById("message").innerHTML = "";
+        } else if (select_something.value === "camera-range") {
+          dive_custom_range.style.display = "none";
+          lblrange.style.display = "none";
+          document.getElementById("message").innerHTML =
+            "Searching Network... <br /> <small style='text-wrap: wrap;'>" +
+            arr_check.toString().replaceAll(",", " , ") +
+            "</small>";
+        } else if (select_something.value === "quick_scan_cam") {
+          dive_custom_range.style.display = "none";
+          lblrange.style.display = "none";
+          document.getElementById("searchBar").style.display = "block";
+          let startTime = new Date().toLocaleTimeString();
+          document.getElementById("message").innerHTML =
+            "Started at: " + startTime + "<br>Searching Network...";
+          fetch("/api/quick_scan")
+            .then((response) => response.json())
+            .then((data) => {
+              const get_ip = data.data;
+              const sortedKeys = Object.keys(get_ip).sort();
+              let html_text = "";
+              sortedKeys.forEach((element) => {
+                html_text += `${element} <br> Mac Address: ${get_ip[element]} <br><br>`;
+
+                results.push(
+                  `${element} <br> Mac Address: ${get_ip[element]} <br><br>`
+                );
+              });
+              document.getElementById("message").innerHTML = html_text;
+            })
+            .catch((error) => {
+              //console.error('Error fetching data:', error)
+              document.getElementById("message").innerHTML =
+                "Error fetching data";
+            });
+        } else if (select_something.value === "search_mac") {
+          dive_custom_range.style.display = "none";
+          lblrange.style.display = "none";
+          document.getElementById("searchBar").style.display = "block";
+          //console.log('search')
+          document.getElementById("message").innerHTML = initial_json;
+        } else if (select_something.value === "change_ip") {
+          change_id.style.display = "block";
+          dive_custom_range.style.display = "none";
+          lblrange.style.display = "none";
+          document.getElementById("message").innerHTML = "";
+          document.getElementById("searchBar").style.display = "block";
+        } else {
+          dive_custom_range.style.display = "none";
+          lblrange.style.display = "none";
+          document.getElementById("message").innerHTML = "";
+        }
+      };
+      try {
+        searchtypechange();
+        document
+          .getElementById("submit-btn")
+          .addEventListener("click", function (event) {
+            event.preventDefault();
+            search();
+          });
+      } catch (error) {
+        document.getElementById("message").innerHTML = " " + error;
+      }
+      function SortIPs(a, b) {
+        //select the first number in the ip address
+        let Ipa = a.split(".").map((x) => parseInt(x));
+        //console.log('Ipa ', Ipa)
+        //192. 192.
+        let Ipb = b.split(".").map((x) => parseInt(x));
+        for (let index = 0; index < Ipa.length; index++) {
+          if (Ipa[index] < Ipb[index]) {
+            return -1;
+          } else if (Ipa[index] > Ipb[index]) {
+            return 1;
+          }
+        }
+
+        return 0;
+      }
+
+
+      const search = () => {
+        try {
+          results = [];
+          let select_something =
+            document.getElementById("select_something").value;
+          let startTime = new Date().toLocaleTimeString();
+          // let iprange = document.getElementById('custom-range').value
+          if (select_something != "quick_scan_cam") {
+            document.getElementById("message").innerHTML =
+              "Started at: " + startTime + "<br>Searching Network...";
+          }
+          if (select_something === "custom-range") {
+            let Ip1classA = document.getElementById("Ip1classA").value;
+            let Ip1classB = document.getElementById("Ip1classB").value;
+            let Ip1classC = document.getElementById("Ip1classC").value;
+            let Ip1classD = document.getElementById("Ip1classD").value;
+
+            let iprange = `${Ip1classA}.${Ip1classB}.${Ip1classC}.0/${Ip1classD}`;
+            fetch(`/api/all_cams?iprange=${encodeURIComponent(iprange)}`)
+              .then((response) => {
+                //console.log('reponse data found ', JSON.stringify(response))
+                return response.json();
+              })
+              .then((result) => {
+                // //console.log("data checked for ''", JSON.stringify(result.data[1].replace(`'`, '')))
+                //console.log('Data found ', JSON.stringify(result))
+                document.getElementById("searchBar").style.display = "block";
+                let endTime = new Date().toLocaleTimeString();
+
+
+                document.getElementById("message").innerHTML =
+                  "Started at: " +
+                  startTime +
+                  "<br>Finished at: " +
+                  endTime +
+                  "<br/><br/>";
+                for (let index = 0; index < result.IP_address.length; index++) {
+                  // //console.log(result.IP_address[index])
+                  if (result.IP_address[index].includes("(Camera)")) {
+                    // //console.log('camera found')
+                    document.getElementById("message").innerHTML +=
+                      "IP Address: " +
+                      `<a href="http://${
+                        result.IP_address[index].replace(`'`, "").split("(")[0]
+                      }">` +
+                      result.IP_address[index].replace(`'`, "") +
+                      "</a>" +
+                      "</br></br>";
+                    results.push(
+                      "IP Address: " +
+                        `<a href="http://${
+                          result.IP_address[index]
+                            .replace(`'`, "")
+                            .split("(")[0]
+                        }">` +
+                        result.IP_address[index].replace(`'`, "") +
+                        "</a>" +
+                        "</br>" +
+                        result.Mac_address[index].replace(`'`, "") +
+                        "</br>" +
+                        "</br>"
+                    );
+                  } else {
+                    document.getElementById("message").innerHTML +=
+                      "IP Address: " +
+                      result.IP_address[index].replace(`'`, "") +
+                      "(No rtsp port found) </br>";
+                    results.push(
+                      "IP Address: " +
+                        result.IP_address[index].replace(`'`, "") +
+                        "(No RSTP port found) </br>" +
+                        result.Mac_address[index].replace(`'`, "") +
+                        "</br>" +
+                        "</br>"
+                    );
+                  }
+
+                  document.getElementById("message").innerHTML +=
+                    result.Mac_address[index].replace(`'`, "") +
+                    "</br>" +
+                    "</br>";
+                  // results.push(result.Mac_address[index].replace(`'`, '') + '</br>' + '</br>')
+                }
+              })
+              .catch((error) => {
+                console.log("error found " + error);
+              });
+          } //Specific range
+          else if (select_something === "camera-range") {
+            document.getElementById("message").innerHTML =
+              "Started at: " + startTime + "<br>Searching Network..." + "</br>";
+            let IP_address = [];
+            let Mac_address = [];
+            let fetchPromises = [];
+
+            for (const element of arr_check) {
+              console.log("element", element);
+              //console.log('Checking specific IP')
+              let fetchPromise = fetch(
+                `/api/all_cams?iprange=${encodeURIComponent(element)}`
+              )
+                .then((response) => {
+                  return response.json();
+                })
+                .then((result) => {
+                  document.getElementById("searchBar").style.display = "block";
+                  // console.log('JSON', JSON.stringify(result))
+                  let output = "";
+                  try {
+                    //console.log('all_cams ', result.data)
+                    output = JSON.stringify(result.data.IP_address);
+                    //console.log('output', output)
+                  } catch (error) {}
+                  //console.log('Data found ', JSON.stringify(result), ' typeof', typeof output)
+                  if (typeof output === "undefined") {
+                    document.getElementById("message").innerHTML +=
+                      "</br>" + result.data + "</br>" + "</br>";
+                  } else {
+                    //console.log('Ip with length', result.IP_address)
+                    // document.getElementById('message').innerHTML += 'Searching Range: ' + element + '</br>'
+                    for (
+                      let index = 0;
+                      index < result.IP_address.length;
+                      index++
+                    ) {
+                      IP_address.push(
+                        result.IP_address[index].replace(`'`, "")
+                      );
+                      Mac_address.push(
+                        result.Mac_address[index].replace(`'`, "")
+                      );
+                      if (result.IP_address[index].includes("(Camera)")) {
+                        results.push(
+                          "IP Address: " +
+                            `<a href="http://${
+                              result.IP_address[index]
+                                .replace(`'`, "")
+                                .split("(")[0]
+                            }">` +
+                            result.IP_address[index].replace(`'`, "") +
+                            "</a>" +
+                            "</br>" +
+                            result.Mac_address[index].replace(`'`, "") +
+                            "</br></br>"
+                        );
+                        document.getElementById("message").innerHTML +=
+                          "IP Address: " +
+                          `<a href="http://${
+                            result.IP_address[index]
+                              .replace(`'`, "")
+                              .split("(")[0]
+                          }">` +
+                          result.IP_address[index].replace(`'`, "") +
+                          "</a>" +
+                          "</br></br>";
+                      } else {
+                        results.push(
+                          "IP Address: " +
+                            result.IP_address[index].replace(`'`, "") +
+                            "(No RSTP port found) </br>" +
+                            result.Mac_address[index].replace(`'`, "") +
+                            "</br>" +
+                            "</br>"
+                        );
+                        document.getElementById("message").innerHTML +=
+                          "IP Address: " +
+                          result.IP_address[index].replace(`'`, "") +
+                          "(No RSTP port found) </br>";
+                      }
+                      document.getElementById("message").innerHTML +=
+                        result.Mac_address[index].replace(`'`, "") +
+                        "</br>" +
+                        "</br>";
+                    }
+                  }
+                })
+                .catch((error) => {
+                  console.log("Error found " + error);
+                });
+
+              fetchPromises.push(fetchPromise);
+            }
+
+            Promise.all(fetchPromises)
+              .then(() => {
+                let endTime = new Date().toLocaleTimeString();
+                document.getElementById("message").innerHTML +=
+                  "<br>Finished at: " + endTime + "<br/><br/>";
+                //console.log('IP_address ', IP_address)
+              })
+              .catch((error) => {
+                console.log("Error in fetching all data: " + error);
+              });
+          }
+        } catch (error) {
+          document.getElementById("message").innerHTML =
+            "Unknown error found " + error;
+        }
+      };
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </body>
+</html>
+<!-- pkg -t node16-win-x64 main.js
+ -->
