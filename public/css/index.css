@@ -1,0 +1,243 @@
+:root {
+  --primary: #99cc00;
+  --primary-hover: #88b200;
+  --bg-dark: #0f172a;
+  --bg-card: rgba(30, 41, 59, 0.7);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border: rgba(255, 255, 255, 0.1);
+  --accent: #38bdf8;
+  --success: #22c55e;
+  --error: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-dark);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(153, 204, 0, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.1) 0px, transparent 50%);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.container {
+  width: 100%;
+  max-width: 800px;
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  padding: 2.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+h1 {
+  text-align: center;
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin-bottom: 2rem;
+  background: linear-gradient(to bottom right, #fff, #94a3b8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.scanner-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--success);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--success);
+}
+
+label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+select,
+input[type="text"] {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  color: var(--text-main);
+  font-size: 1rem;
+  transition: all 0.2s;
+  margin-bottom: 1.5rem;
+}
+
+select:focus,
+input[type="text"]:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(153, 204, 0, 0.2);
+}
+
+.input-group-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.input-group-row input {
+  width: 70px;
+  text-align: center;
+  margin-bottom: 0;
+}
+
+button {
+  width: 100%;
+  padding: 0.875rem;
+  background-color: var(--primary);
+  color: #000;
+  font-weight: 600;
+  border: none;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+button:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+.results-area {
+  margin-top: 2rem;
+  border-top: 1px solid var(--border);
+  padding-top: 2rem;
+}
+
+.result-card {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border);
+  transition: background 0.2s;
+}
+
+.result-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.ip-address {
+  font-weight: 600;
+  color: var(--accent);
+  font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
+}
+
+.mac-address {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.vendor-tag {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.625rem;
+  background: rgba(153, 204, 0, 0.1);
+  color: var(--primary);
+  border-radius: 1rem;
+  font-weight: 600;
+}
+
+.camera-tag {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.625rem;
+    background: rgba(56, 189, 248, 0.1);
+    color: var(--accent);
+    border-radius: 1rem;
+    font-weight: 600;
+}
+
+.hidden {
+  display: none;
+}
+
+#message {
+  text-align: center;
+  margin: 1.5rem 0;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(153, 204, 0, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--primary);
+  animation: spin 1s linear infinite;
+  margin-right: 10px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* Portfolio About Section */
+.about-section {
+    margin-top: 3rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.about-section h2 {
+    color: var(--text-main);
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+}
