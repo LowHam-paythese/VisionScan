@@ -30,8 +30,8 @@ VisionScan is a professional, production-ready network discovery application des
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/lohan/Camera-Network-Scanner.git
-   cd Camera-Network-Scanner
+   git clone https://github.com/LowHam-paythese/VisionScan.git
+   cd VisionScan
    ```
 
 2. **Install dependencies**:
